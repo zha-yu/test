@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 当前流水线只读取代码，不需要写仓库、Issue 或 Release。
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+        with:
+          # CI 不执行 git push，检出后不保留写入凭据。
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version-file: .python-version
+
+      - name: Install uv
+        # setup-uv 没有 v10 浮动标签；固定到已审核的 v10.3.0 提交。
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.12.20"
+          enable-cache: true
+
+      - name: Check lockfile and install dependencies
+        # --locked 保证 CI 不会偷偷重写 uv.lock。
+        run: uv sync --locked --all-groups
+
+      - name: Ruff lint
+        run: uv run --locked ruff check --output-format=github .
+
+      - name: Ruff format check
+        run: uv run --locked ruff format --check .
+
+      - name: Static type check
+        run: uv run --locked mypy src packages/release_guard/src
+
+      - name: Secret check
+        # -z 与 xargs -0 能正确处理带空格的文件名。
+        run: git ls-files -z | xargs -0 uv run --locked detect-secrets-hook --baseline .secrets.baseline
+
+      - name: Validate Agent version manifest
+        run: uv run --locked python scripts/validate_version_manifest.py
+
+      - name: Run tests
+        run: >-
+          uv run --locked pytest
+          --junitxml=reports/pytest.xml
+          --cov
+          --cov-report=xml:reports/coverage.xml
+
+      - name: Build wheel and source distribution
+        # 根应用依赖 workspace 成员，因此两个包必须作为同一候选集构建。
+        run: uv build --all-packages --out-dir dist
+
+      - name: Upload test and build evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-evidence-${{ github.sha }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            reports/
+            dist/
+            release/agent_versions.json
+            uv.lock

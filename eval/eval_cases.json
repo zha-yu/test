@@ -1,0 +1,8 @@
+[
+  {
+    "case_id": "equipment-001",
+    "question": "如何申请办公设备？",
+    "expected_fact": "通过设备申请工具提交设备类型和申请理由",
+    "required_source": "knowledge/faq.md"
+  }
+]

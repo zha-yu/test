@@ -1,0 +1,69 @@
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"
+
+[project]
+name = "employee-agent-service"
+version = "0.1.0"
+description = "Week17 Day01 可复现工程与 CI 教学项目"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi>=0.115,<1.0",
+    "release-guard",
+    "uvicorn[standard]>=0.34,<1.0",
+]
+
+[dependency-groups]
+lint = [
+    "mypy>=1.15,<2.0",
+    "ruff>=0.11,<1.0",
+]
+test = [
+    "httpx2>=2.0,<3.0",
+    "pytest>=8.3,<10.0",
+    "pytest-cov>=6.0,<8.0",
+]
+security = [
+    "detect-secrets>=1.5,<2.0",
+]
+# dev 是聚合组：本地执行 uv sync 时，一次安装三类开发工具。
+dev = [
+    { include-group = "lint" },
+    { include-group = "test" },
+    { include-group = "security" },
+]
+
+[tool.uv]
+# 团队统一 uv 的次版本范围，避免工具行为跨大版本突然变化。
+required-version = ">=0.12,<0.13"
+
+[tool.uv.sources]
+# release-guard 不从公网下载，而是使用当前 workspace 中的本地成员。
+release-guard = { workspace = true }
+
+[tool.uv.workspace]
+members = ["packages/release_guard"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.coverage.run]
+branch = true
+source = ["employee_agent_service", "release_guard"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90

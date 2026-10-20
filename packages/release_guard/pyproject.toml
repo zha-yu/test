@@ -1,0 +1,9 @@
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"
+
+[project]
+name = "release-guard"
+version = "0.1.0"
+description = "校验 Agent 发布版本清单的 workspace 成员"
+requires-python = ">=3.13,<3.14"

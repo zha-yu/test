@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "service": {
+    "name": "employee-agent-service",
+    "version": "0.1.0"
+  },
+  "runtime": {
+    "python": "3.13.7",
+    "uv": "0.12.x",
+    "lockfile": "uv.lock"
+  },
+  "agent": {
+    "prompt": {
+      "version": "prompt-1.0.0",
+      "path": "prompts/supervisor.md",
+      "sha256": "aab8ce49d18cf6c5c17f2d014fd893c7b0264a8f64aa4e535d7bf7c26896a733"
+    },
+    "chat_model": {
+      "provider": "teaching-example",
+      "model_id": "Qwen/Qwen2.5-7B-Instruct",
+      "parameter_profile": "deterministic-v1"
+    },
+    "skills": {
+      "version": "skills-1.0.0",
+      "items": [
+        "knowledge-search",
+        "device-application"
+      ]
+    },
+    "tools": {
+      "version": "tools-1.0.0",
+      "items": [
+        "search_knowledge",
+        "create_device_request"
+      ]
+    },
+    "harness": {
+      "version": "harness-1.0.0",
+      "stop_policy": "max-8-steps",
+      "confirmation_policy": "writes-require-confirmation"
+    },
+    "embedding": {
+      "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "dimension": 384
+    },
+    "knowledge_base": {
+      "version": "kb-1.0.0",
+      "path": "knowledge/faq.md",
+      "sha256": "c8096974126a4263179def65d0d575645fad443c9a8f9809ccb64f9100169c5b"
+    },
+    "index": {
+      "version": "index-1.0.0",
+      "path": "index/index_manifest.json",
+      "sha256": "a6ce90d13b954ec05228b2c5bf7010cda5445e6cef234730d157f54825e9aa63"
+    },
+    "evaluation": {
+      "version": "eval-1.0.0",
+      "path": "eval/eval_cases.json",
+      "sha256": "4b1fee1995979925eac0a9a9761109c43984387ddb9ed9c14819fa169f5da680"
+    }
+  }
+}
